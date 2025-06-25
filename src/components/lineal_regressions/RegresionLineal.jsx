@@ -11,7 +11,7 @@ export default function RegresionLineal() {
     const obtenerGraficoPredict1 = async () => {
       try {
         const res = await axios.get(`${getData}/predict-addiction-1`);
-        console.log("Respuesta del servidor:", res.data);
+        //console.log("Respuesta del servidor:", res.data);
         if (res.data.image) {
           setpredictAddiction1(res.data.image);
         }
@@ -27,7 +27,7 @@ export default function RegresionLineal() {
     const obtenerGraficoPredict2 = async () => {
       try {
         const res = await axios.get(`${getData}/predict-addiction-2`);
-        console.log("Respuesta del servidor:", res.data);
+        //console.log("Respuesta del servidor:", res.data);
         if (res.data.image) {
           setpredictAddiction2(res.data.image);
         }
@@ -42,7 +42,7 @@ export default function RegresionLineal() {
     const obtenerGraficoPredict3 = async () => {
       try {
         const res = await axios.get(`${getData}/predict-addiction-3`);
-        console.log("Respuesta del servidor:", res.data);
+        //console.log("Respuesta del servidor:", res.data);
         if (res.data.image) {
           setpredictAddiction3(res.data.image);
         }
@@ -55,9 +55,9 @@ export default function RegresionLineal() {
 
   return (
     <>
-      <div className="bg-white shadow-lg rounded-2xl p-6 max-w-3xl w-full">
+      <div className="">
         <h2 className="text-2xl font-semibold mb-4 text-center text-gray-800">
-          Gráfico de Regresión Lineal
+          Prediccion 1
         </h2>
 
         {predictAddiction1 ? (
@@ -70,9 +70,9 @@ export default function RegresionLineal() {
           <p className="text-center text-gray-500">Cargando imagen...</p>
         )}
       </div>
-      <div className="bg-white shadow-lg rounded-2xl p-6 max-w-3xl w-full mt-6">
+      <div className="">
         <h2 className="text-2xl font-semibold mb-4 text-center text-gray-800">
-          Gráfico de Regresión Lineal 2
+          Prediccion 2
         </h2>
 
         {predictAddiction2 ? (
@@ -85,9 +85,9 @@ export default function RegresionLineal() {
           <p className="text-center text-gray-500">Cargando imagen...</p>
         )}
       </div>
-      <div className="bg-white shadow-lg rounded-2xl p-6 max-w-3xl w-full mt-6">
+      <div className="">
         <h2 className="text-2xl font-semibold mb-4 text-center text-gray-800">
-          Gráfico de Regresión Lineal 3
+          Prediccion 3
         </h2>
 
         {predictAddiction3 ? (

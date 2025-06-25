@@ -9,9 +9,10 @@ export default function Cluster() {
     const obtenerGrafico = async () => {
       try {
         const res = await axios.get(`${getData}/addict-age-daily-hours`);
-        //console.log("Respuesta del servidor:", res.data);
+        //console.log("Respuesta del servidor:", res);
         if (res.data.plot_base64) {
           setImagenBase64(res.data.plot_base64);
+      
         } else {
           console.warn("La respuesta no contiene la imagen:", res.data);
         }
@@ -24,7 +25,7 @@ export default function Cluster() {
   }, []);
 
   return (
-    <div className="bg-white shadow-lg rounded-2xl p-6 max-w-3xl w-full">
+    <div className="">
       <h2 className="text-2xl font-semibold mb-4 text-center text-gray-800">
         Gráfico de Clustering
       </h2>

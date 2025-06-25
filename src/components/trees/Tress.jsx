@@ -41,7 +41,7 @@ export default function Tress() {
 
   return (
     <>
-      <div className="bg-white shadow-lg rounded-2xl p-6 max-w-3xl w-full">
+      <div className="">
         <h2 className="text-2xl font-semibold mb-4 text-center text-gray-800">
           Gráfico de Árboles de Decisión
         </h2>

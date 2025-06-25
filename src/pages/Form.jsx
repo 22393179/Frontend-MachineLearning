@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { FaUser, FaGlobe, FaBook, FaHeart, FaMoon, FaBrain, FaComments } from 'react-icons/fa';
 
 export default function Form() {
   const [formData, setFormData] = useState({
@@ -26,272 +27,66 @@ export default function Form() {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Form submitted:", formData);
-    // Aquí iría la lógica para enviar los datos
   };
+
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-8">
-          Student Social Media Usage Survey
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300 py-12 px-4 flex items-center justify-center">
+      <div className="w-full max-w-3xl bg-white p-8 rounded-2xl shadow-xl">
+        <h2 className="text-3xl font-extrabold text-center text-blue-700 mb-2">
+          🧑‍🎓 Encuesta de Redes Sociales
         </h2>
+        <p className="text-center text-sm text-gray-500 mb-6">
+          Ayúdanos respondiendo honestamente
+        </p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Sección de Información Demográfica */}
+          {/* Información Demográfica */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label
-                htmlFor="age"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Edad
-              </label>
-              <input
-                type="number"
-                id="age"
-                name="age"
-                value={formData.age}
-                onChange={handleChange}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                min="16"
-                max="30"
-                required
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="gender"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Género
-              </label>
-              <select
-                id="gender"
-                name="gender"
-                value={formData.gender}
-                onChange={handleChange}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                required
-              >
-                <option value="">Seleccionar</option>
-                <option value="Male">Hombre</option>
-                <option value="Female">Mujer</option>
-                <option value="Other">otro</option>
-              </select>
-            </div>
-
-            <div>
-              <label
-                htmlFor="academicLevel"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Nivel académico
-              </label>
-              <select
-                id="academicLevel"
-                name="academicLevel"
-                value={formData.academicLevel}
-                onChange={handleChange}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                required
-              >
-                <option value="">Seleccionar</option>
-                <option value="High School">Preparatoria</option>
-                <option value="Undergraduate">Pregrado</option>
-                <option value="Graduate">Posgrado</option>
-              </select>
-            </div>
-
-            <div>
-              <label
-                htmlFor="country"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Country
-              </label>
-              <input
-                type="text"
-                id="country"
-                name="country"
-                value={formData.country}
-                onChange={handleChange}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                required
-              />
-            </div>
+            <Input label="Edad" name="age" value={formData.age} onChange={handleChange} type="number" min="16" max="30" icon={<FaUser />} />
+            <Select label="Género" name="gender" value={formData.gender} onChange={handleChange} options={["Hombre", "Mujer", "Otro"]} />
+            <Select label="Nivel académico" name="academicLevel" value={formData.academicLevel} onChange={handleChange} options={["Preparatoria", "Pregrado", "Posgrado"]} icon={<FaBook />} />
+            <Input label="País" name="country" value={formData.country} onChange={handleChange} icon={<FaGlobe />} />
           </div>
 
-          {/* Sección de Uso de Redes Sociales */}
-          <div className="border-t border-gray-200 pt-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
-              Social Media Usage
-            </h3>
+          {/* Uso de redes sociales */}
+          <div className="pt-6 border-t border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">📱 Uso de redes sociales</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label
-                  htmlFor="avgDailyUsageHours"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Average Daily Usage (Hours)
-                </label>
-                <input
-                  type="number"
-                  id="avgDailyUsageHours"
-                  name="avgDailyUsageHours"
-                  value={formData.avgDailyUsageHours}
-                  onChange={handleChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  step="0.1"
-                  min="0"
-                  max="24"
-                  required
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="mostUsedPlatform"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Most Used Platform
-                </label>
-                <select
-                  id="mostUsedPlatform"
-                  name="mostUsedPlatform"
-                  value={formData.mostUsedPlatform}
-                  onChange={handleChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  required
-                >
-                  <option value="">Select</option>
-                  <option value="Instagram">Instagram</option>
-                  <option value="TikTok">TikTok</option>
-                  <option value="Facebook">Facebook</option>
-                  <option value="Twitter">Twitter</option>
-                  <option value="Snapchat">Snapchat</option>
-                  <option value="YouTube">YouTube</option>
-                  <option value="LinkedIn">LinkedIn</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-
-              <div className="flex items-center">
+              <Input label="Uso diario promedio (hrs)" name="avgDailyUsageHours" value={formData.avgDailyUsageHours} onChange={handleChange} type="number" min="0" max="24" />
+              <Select label="Plataforma más usada" name="mostUsedPlatform" value={formData.mostUsedPlatform} onChange={handleChange} options={["Instagram", "TikTok", "Facebook", "Twitter", "Snapchat", "YouTube", "LinkedIn", "Otra"]} />
+              <div className="flex items-center col-span-full">
                 <input
                   type="checkbox"
                   id="affectsAcademicPerformance"
                   name="affectsAcademicPerformance"
                   checked={formData.affectsAcademicPerformance}
                   onChange={handleChange}
-                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
-                <label
-                  htmlFor="affectsAcademicPerformance"
-                  className="ml-2 block text-sm text-gray-700"
-                >
-                  Affects Academic Performance
+                <label htmlFor="affectsAcademicPerformance" className="ml-2 text-sm text-gray-700">
+                  Afecta tu desempeño académico
                 </label>
               </div>
             </div>
           </div>
 
-          {/* Sección de Salud y Relaciones */}
-          <div className="border-t border-gray-200 pt-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
-              Health & Relationships
-            </h3>
+          {/* Salud y relaciones */}
+          <div className="pt-6 border-t border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">💬 Salud y relaciones</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label
-                  htmlFor="sleepHoursPerNight"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Sleep Hours Per Night
-                </label>
-                <input
-                  type="number"
-                  id="sleepHoursPerNight"
-                  name="sleepHoursPerNight"
-                  value={formData.sleepHoursPerNight}
-                  onChange={handleChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  step="0.1"
-                  min="0"
-                  max="12"
-                  required
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="mentalHealthScore"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Mental Health Score (1-10)
-                </label>
-                <input
-                  type="number"
-                  id="mentalHealthScore"
-                  name="mentalHealthScore"
-                  value={formData.mentalHealthScore}
-                  onChange={handleChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  min="1"
-                  max="10"
-                  required
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="relationshipStatus"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Relationship Status
-                </label>
-                <select
-                  id="relationshipStatus"
-                  name="relationshipStatus"
-                  value={formData.relationshipStatus}
-                  onChange={handleChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  required
-                >
-                  <option value="">Select</option>
-                  <option value="Single">Single</option>
-                  <option value="In Relationship">In Relationship</option>
-                  <option value="Complicated">Complicated</option>
-                </select>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="conflictsOverSocialMedia"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Conflicts Over Social Media (1-5)
-                </label>
-                <input
-                  type="number"
-                  id="conflictsOverSocialMedia"
-                  name="conflictsOverSocialMedia"
-                  value={formData.conflictsOverSocialMedia}
-                  onChange={handleChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  min="0"
-                  max="5"
-                  required
-                />
-              </div>
+              <Input label="Horas de sueño por noche" name="sleepHoursPerNight" value={formData.sleepHoursPerNight} onChange={handleChange} type="number" min="0" max="12" icon={<FaMoon />} />
+              <Input label="Salud mental (1-10)" name="mentalHealthScore" value={formData.mentalHealthScore} onChange={handleChange} type="number" min="1" max="10" icon={<FaBrain />} />
+              <Select label="Estado sentimental" name="relationshipStatus" value={formData.relationshipStatus} onChange={handleChange} options={["Soltero/a", "En una relación", "Complicado"]} icon={<FaHeart />} />
+              <Input label="Conflictos por redes (1-5)" name="conflictsOverSocialMedia" value={formData.conflictsOverSocialMedia} onChange={handleChange} type="number" min="0" max="5" icon={<FaComments />} />
             </div>
           </div>
 
-          {/* Botón de envío */}
-          <div className="flex justify-end">
+          <div className="flex justify-end mt-6">
             <button
               type="submit"
-              className="bg-indigo-600 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-lg transition"
             >
-              Enviar
+              Enviar respuestas
             </button>
           </div>
         </form>
@@ -299,3 +94,42 @@ export default function Form() {
     </div>
   );
 }
+
+// Componentes reutilizables
+
+const Input = ({ label, name, value, onChange, type = "text", icon = null, ...props }) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+    <div className="relative">
+      {icon && <span className="absolute inset-y-0 left-3 flex items-center text-gray-400">{icon}</span>}
+      <input
+        name={name}
+        value={value}
+        onChange={onChange}
+        type={type}
+        className={`w-full ${icon ? "pl-10" : "pl-3"} pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm`}
+        {...props}
+      />
+    </div>
+  </div>
+);
+
+const Select = ({ label, name, value, onChange, options = [], icon = null }) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+    <div className="relative">
+      {icon && <span className="absolute inset-y-0 left-3 flex items-center text-gray-400">{icon}</span>}
+      <select
+        name={name}
+        value={value}
+        onChange={onChange}
+        className={`w-full ${icon ? "pl-10" : "pl-3"} pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm`}
+      >
+        <option value="">Seleccionar</option>
+        {options.map((opt, i) => (
+          <option key={i} value={opt}>{opt}</option>
+        ))}
+      </select>
+    </div>
+  </div>
+);

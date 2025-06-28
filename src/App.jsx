@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import Form from "./pages/Form";
 import Predictions from "./pages/predictions";
+import { FormUser } from "./pages/FormUser";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
           <Route path="/" element={<Login/>}/>
           <Route path="/form" element={<Form/>}/>
           <Route path="/predictions" element={<Predictions/>}/>
+          <Route path="/userPrediction" element={<FormUser/>}/>
         </Routes>
       </Router>
     </>

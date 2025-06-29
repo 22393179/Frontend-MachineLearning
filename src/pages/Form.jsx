@@ -99,6 +99,9 @@ export default function Form() {
       return;
     }
 
+    if (isSubmitting) return; // previene doble clic
+    setIsSubmitting(true);
+
     try {
       const response = await fetch(`${backendURL}/api/insertSocialMedia`, {
         method: "POST",
@@ -157,6 +160,8 @@ export default function Form() {
         text: "Hubo un error al enviar el formulario.",
         confirmButtonColor: "#dc2626",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -342,9 +347,12 @@ export default function Form() {
           <div className="flex justify-end mt-6">
             <button
               type="submit"
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-lg transition"
+              disabled={isSubmitting}
+              className={`bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-lg transition ${
+                isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+              }`}
             >
-              Enviar respuestas
+              {isSubmitting ? "Enviando..." : "Enviar respuestas"}
             </button>
           </div>
         </form>

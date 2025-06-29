@@ -1,5 +1,14 @@
-import { useState } from 'react';
-import { FaUser, FaGlobe, FaBook, FaHeart, FaMoon, FaBrain, FaComments } from 'react-icons/fa';
+import { useState } from "react";
+import {
+  FaUser,
+  FaGlobe,
+  FaBook,
+  FaHeart,
+  FaMoon,
+  FaBrain,
+  FaComments,
+} from "react-icons/fa";
+import Swal from "sweetalert2";
 
 export default function Form() {
   const [formData, setFormData] = useState({
@@ -14,6 +23,7 @@ export default function Form() {
     mentalHealthScore: "",
     relationshipStatus: "",
     conflictsOverSocialMedia: "",
+    addictedScore: "",
   });
 
   const handleChange = (e) => {
@@ -24,9 +34,70 @@ export default function Form() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const backendURL = import.meta.env.VITE_BACKEND_URL;
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
+
+    try {
+      const response = await fetch(`${backendURL}/api/insertSocialMedia`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          Age: Number(formData.age),
+          Gender: formData.gender,
+          Academic_Level: formData.academicLevel,
+          Country: formData.country,
+          Avg_Daily_Usage_Hours: Number(formData.avgDailyUsageHours),
+          Most_Used_Platform: formData.mostUsedPlatform,
+          Affects_Academic_Performance: formData.affectsAcademicPerformance
+            ? 1
+            : 0,
+          Sleep_Hours_Per_Night: Number(formData.sleepHoursPerNight),
+          Mental_Health_Score: Number(formData.mentalHealthScore),
+          Relationship_Status: formData.relationshipStatus,
+          Conflicts_Over_Social_Media: Number(
+            formData.conflictsOverSocialMedia
+          ),
+          Addicted_Score: Number(formData.addictedScore),
+        }),
+      });
+
+      if (!response.ok) throw new Error("Error al enviar");
+
+      // SweetAlert para éxito
+      Swal.fire({
+        icon: "success",
+        title: "¡Formulario enviado!",
+        text: "Tus respuestas se enviaron correctamente.",
+        confirmButtonColor: "#2563eb",
+      });
+      setFormData({
+        age: "",
+        gender: "",
+        academicLevel: "",
+        country: "",
+        avgDailyUsageHours: "",
+        mostUsedPlatform: "",
+        affectsAcademicPerformance: false,
+        sleepHoursPerNight: "",
+        mentalHealthScore: "",
+        relationshipStatus: "",
+        conflictsOverSocialMedia: "",
+        addictedScore: "",
+      });
+    } catch (error) {
+      console.error(error);
+      // SweetAlert para error
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Hubo un error al enviar el formulario.",
+        confirmButtonColor: "#dc2626",
+      });
+    }
   };
 
   return (
@@ -42,42 +113,168 @@ export default function Form() {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Información Demográfica */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Input label="Edad" name="age" value={formData.age} onChange={handleChange} type="number" min="16" max="30" icon={<FaUser />} />
-            <Select label="Género" name="gender" value={formData.gender} onChange={handleChange} options={["Hombre", "Mujer", "Otro"]} />
-            <Select label="Nivel académico" name="academicLevel" value={formData.academicLevel} onChange={handleChange} options={["Preparatoria", "Pregrado", "Posgrado"]} icon={<FaBook />} />
-            <Input label="País" name="country" value={formData.country} onChange={handleChange} icon={<FaGlobe />} />
+            <Input
+              label="Edad"
+              name="age"
+              value={formData.age}
+              onChange={handleChange}
+              type="number"
+              min="16"
+              max="30"
+              icon={<FaUser />}
+            />
+            <Select
+              label="Género"
+              name="gender"
+              value={formData.gender}
+              onChange={handleChange}
+              options={["Hombre", "Mujer", "Otro"]}
+            />
+            <Select
+              label="Nivel académico"
+              name="academicLevel"
+              value={formData.academicLevel}
+              onChange={handleChange}
+              options={[
+                "Primaria",
+                "Secundaria",
+                "Preparatoria",
+                "Técnico Superios Universitario",
+                "Ingeniero/a",
+                "Licencio/a)",
+              ]}
+              icon={<FaBook />}
+            />
+            <Select
+              label="País"
+              name="country"
+              value={formData.country}
+              onChange={handleChange}
+              options={[
+                "México",
+                "Colombia",
+                "Argentina",
+                "Perú",
+                "Chile",
+                "España",
+                "Estados Unidos",
+                "Brasil",
+                "Ecuador",
+                "Guatemala",
+              ]}
+              icon={<FaGlobe />}
+            />
           </div>
 
           {/* Uso de redes sociales */}
           <div className="pt-6 border-t border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">📱 Uso de redes sociales</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              📱 Uso de redes sociales
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Input label="Uso diario promedio (hrs)" name="avgDailyUsageHours" value={formData.avgDailyUsageHours} onChange={handleChange} type="number" min="0" max="24" />
-              <Select label="Plataforma más usada" name="mostUsedPlatform" value={formData.mostUsedPlatform} onChange={handleChange} options={["Instagram", "TikTok", "Facebook", "Twitter", "Snapchat", "YouTube", "LinkedIn", "Otra"]} />
-              <div className="flex items-center col-span-full">
-                <input
-                  type="checkbox"
-                  id="affectsAcademicPerformance"
-                  name="affectsAcademicPerformance"
-                  checked={formData.affectsAcademicPerformance}
-                  onChange={handleChange}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label htmlFor="affectsAcademicPerformance" className="ml-2 text-sm text-gray-700">
-                  Afecta tu desempeño académico
-                </label>
-              </div>
+              <Input
+                label="Uso diario promedio (hrs)"
+                placeholder="3"
+                name="avgDailyUsageHours"
+                value={formData.avgDailyUsageHours}
+                onChange={handleChange}
+                type="number"
+                min="0"
+                max="24"
+              />
+              <Select
+                label="Plataforma más usada"
+                name="mostUsedPlatform"
+                value={formData.mostUsedPlatform}
+                onChange={handleChange}
+                options={[
+                  "Instagram",
+                  "TikTok",
+                  "Facebook",
+                  "Twitter",
+                  "Snapchat",
+                  "YouTube",
+                  "LinkedIn",
+                  "Otra",
+                ]}
+              />
+              <Input
+                label="Nivel de adicción a las redes sociales (1-10)"
+                placeholder="5"
+                name="addictedScore"
+                value={formData.addictedScore}
+                onChange={handleChange}
+                type="number"
+                min="1"
+                max="10"
+              />
+              <Select
+                label="¿Afecta tu desempeño académico las redes sociales?"
+                name="affectsAcademicPerformance"
+                value={formData.affectsAcademicPerformance ? "Sí" : "No"}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    affectsAcademicPerformance: e.target.value === "Sí",
+                  }))
+                }
+                options={["Sí", "No"]}
+              />
             </div>
           </div>
 
           {/* Salud y relaciones */}
           <div className="pt-6 border-t border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">💬 Salud y relaciones</h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              💬 Salud y relaciones
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Input label="Horas de sueño por noche" name="sleepHoursPerNight" value={formData.sleepHoursPerNight} onChange={handleChange} type="number" min="0" max="12" icon={<FaMoon />} />
-              <Input label="Salud mental (1-10)" name="mentalHealthScore" value={formData.mentalHealthScore} onChange={handleChange} type="number" min="1" max="10" icon={<FaBrain />} />
-              <Select label="Estado sentimental" name="relationshipStatus" value={formData.relationshipStatus} onChange={handleChange} options={["Soltero/a", "En una relación", "Complicado"]} icon={<FaHeart />} />
-              <Input label="Conflictos por redes (1-5)" name="conflictsOverSocialMedia" value={formData.conflictsOverSocialMedia} onChange={handleChange} type="number" min="0" max="5" icon={<FaComments />} />
+              <Input
+                label="Horas de sueño por noche"
+                placeholder="7"
+                name="sleepHoursPerNight"
+                value={formData.sleepHoursPerNight}
+                onChange={handleChange}
+                type="number"
+                min="0"
+                max="12"
+                icon={<FaMoon />}
+              />
+              <Input
+                label="Salud mental (1-10)"
+                placeholder="Que tan bien te sientes"
+                name="mentalHealthScore"
+                value={formData.mentalHealthScore}
+                onChange={handleChange}
+                type="number"
+                min="1"
+                max="10"
+                icon={<FaBrain />}
+              />
+              <Select
+                label="Estado sentimental"
+                name="relationshipStatus"
+                value={formData.relationshipStatus}
+                onChange={handleChange}
+                options={[
+                  "Soltero/a",
+                  "En una relación",
+                  "Casado/a",
+                  "Complicado",
+                ]}
+                icon={<FaHeart />}
+              />
+              <Input
+                label="Conflictos por redes (1-5)"
+                placeholder="Promedio de conflictos por redes"
+                name="conflictsOverSocialMedia"
+                value={formData.conflictsOverSocialMedia}
+                onChange={handleChange}
+                type="number"
+                min="0"
+                max="5"
+                icon={<FaComments />}
+              />
             </div>
           </div>
 
@@ -90,6 +287,12 @@ export default function Form() {
             </button>
           </div>
         </form>
+        <p className="text-center text-gray-600 text-sm italic mt-8">
+          Información recaudada con fines educativos
+        </p>
+        <p className="text-center text-gray-600 text-sm italic mt-1">
+          Equipo 1 &mdash; Grupo: <span className="font-semibold text-blue-600">IDYGS92</span>
+        </p>
       </div>
     </div>
   );
@@ -97,37 +300,70 @@ export default function Form() {
 
 // Componentes reutilizables
 
-const Input = ({ label, name, value, onChange, type = "text", icon = null, ...props }) => (
+const Input = ({
+  label,
+  name,
+  value,
+  onChange,
+  type = "text",
+  icon = null,
+  ...props
+}) => (
   <div>
-    <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+    <label className="block text-sm font-medium text-gray-700 mb-1">
+      {label}
+    </label>
     <div className="relative">
-      {icon && <span className="absolute inset-y-0 left-3 flex items-center text-gray-400">{icon}</span>}
+      {icon && (
+        <span className="absolute inset-y-0 left-3 flex items-center text-gray-400">
+          {icon}
+        </span>
+      )}
       <input
         name={name}
         value={value}
         onChange={onChange}
         type={type}
-        className={`w-full ${icon ? "pl-10" : "pl-3"} pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm`}
+        className={`w-full ${
+          icon ? "pl-10" : "pl-3"
+        } pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm`}
         {...props}
       />
     </div>
   </div>
 );
 
-const Select = ({ label, name, value, onChange, options = [], icon = null }) => (
+const Select = ({
+  label,
+  name,
+  value,
+  onChange,
+  options = [],
+  icon = null,
+}) => (
   <div>
-    <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+    <label className="block text-sm font-medium text-gray-700 mb-1">
+      {label}
+    </label>
     <div className="relative">
-      {icon && <span className="absolute inset-y-0 left-3 flex items-center text-gray-400">{icon}</span>}
+      {icon && (
+        <span className="absolute inset-y-0 left-3 flex items-center text-gray-400">
+          {icon}
+        </span>
+      )}
       <select
         name={name}
         value={value}
         onChange={onChange}
-        className={`w-full ${icon ? "pl-10" : "pl-3"} pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm`}
+        className={`w-full ${
+          icon ? "pl-10" : "pl-3"
+        } pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm`}
       >
         <option value="">Seleccionar</option>
         {options.map((opt, i) => (
-          <option key={i} value={opt}>{opt}</option>
+          <option key={i} value={opt}>
+            {opt}
+          </option>
         ))}
       </select>
     </div>

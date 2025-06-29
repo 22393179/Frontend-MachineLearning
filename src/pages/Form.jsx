@@ -39,6 +39,34 @@ export default function Form() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const requiredFields = [
+      "age",
+      "gender",
+      "academicLevel",
+      "country",
+      "avgDailyUsageHours",
+      "mostUsedPlatform",
+      "sleepHoursPerNight",
+      "mentalHealthScore",
+      "relationshipStatus",
+      "conflictsOverSocialMedia",
+      "addictedScore",
+    ];
+
+    const emptyFields = requiredFields.filter(
+      (field) => formData[field] === ""
+    );
+
+    if (emptyFields.length > 0) {
+      Swal.fire({
+        icon: "warning",
+        title: "Campos incompletos",
+        text: "Por favor completa todos los campos antes de enviar el formulario.",
+        confirmButtonColor: "#f59e0b",
+      });
+      return;
+    }
+
     try {
       const response = await fetch(`${backendURL}/api/insertSocialMedia`, {
         method: "POST",
@@ -119,8 +147,6 @@ export default function Form() {
               value={formData.age}
               onChange={handleChange}
               type="number"
-              min="16"
-              max="30"
               icon={<FaUser />}
             />
             <Select
@@ -139,7 +165,7 @@ export default function Form() {
                 "Primaria",
                 "Secundaria",
                 "Preparatoria",
-                "Técnico Superios Universitario",
+                "Técnico Superior Universitario",
                 "Ingeniero/a",
                 "Licencio/a)",
               ]}
@@ -195,6 +221,9 @@ export default function Form() {
                   "Snapchat",
                   "YouTube",
                   "LinkedIn",
+                  "WhatsApp",
+                  "Telegram",
+                  "Discord",
                   "Otra",
                 ]}
               />
@@ -236,8 +265,6 @@ export default function Form() {
                 value={formData.sleepHoursPerNight}
                 onChange={handleChange}
                 type="number"
-                min="0"
-                max="12"
                 icon={<FaMoon />}
               />
               <Input
@@ -265,7 +292,7 @@ export default function Form() {
                 icon={<FaHeart />}
               />
               <Input
-                label="Conflictos por redes (1-5)"
+                label="Conflictos por redes (0-5)"
                 placeholder="Promedio de conflictos por redes"
                 name="conflictsOverSocialMedia"
                 value={formData.conflictsOverSocialMedia}
@@ -291,7 +318,8 @@ export default function Form() {
           Información recaudada con fines educativos
         </p>
         <p className="text-center text-gray-600 text-sm italic mt-1">
-          Equipo 1 &mdash; Grupo: <span className="font-semibold text-blue-600">IDYGS92</span>
+          Equipo 1 &mdash; Grupo:{" "}
+          <span className="font-semibold text-blue-600">IDYGS92</span>
         </p>
       </div>
     </div>

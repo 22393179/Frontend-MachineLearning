@@ -67,6 +67,38 @@ export default function Form() {
       return;
     }
 
+    if (Number(formData.age) < 8 || Number(formData.age) > 90) {
+      Swal.fire({
+        icon: "warning",
+        title: "Edad fuera de rango",
+        text: "La edad debe estar entre 8 y 90 años.",
+        confirmButtonColor: "#f59e0b",
+      });
+      return;
+    }
+
+    const usage = Number(formData.avgDailyUsageHours);
+    if (usage < 0 || usage > 24) {
+      Swal.fire({
+        icon: "warning",
+        title: "Uso diario inválido",
+        text: "El uso diario de redes debe estar entre 0 y 24 horas.",
+        confirmButtonColor: "#f59e0b",
+      });
+      return;
+    }
+
+    const sleepHours = Number(formData.sleepHoursPerNight);
+    if (sleepHours < 0 || sleepHours > 12) {
+      Swal.fire({
+        icon: "warning",
+        title: "Horas de sueño inválidas",
+        text: "Las horas de sueño deben estar entre 0 y 12.",
+        confirmButtonColor: "#f59e0b",
+      });
+      return;
+    }
+
     try {
       const response = await fetch(`${backendURL}/api/insertSocialMedia`, {
         method: "POST",
@@ -147,6 +179,8 @@ export default function Form() {
               value={formData.age}
               onChange={handleChange}
               type="number"
+              min="8"
+              max="90"
               icon={<FaUser />}
             />
             <Select

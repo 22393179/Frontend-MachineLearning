@@ -21,7 +21,7 @@ const predictionTitles = {
 // Valores válidos para campos categóricos (alineados con el backend)
 const validValues = {
     Gender: ['Hombre', 'Mujer', 'Otro'],
-    Country: ['México', 'Brasil', 'Perú'],
+    Country: ['México', 'Brasil', 'Perú', 'Bolivia', 'Colombia', 'Argentina', 'Chile', 'Ecuador', 'Venezuela', 'Guatemala', 'Canada'],
     Academic_Level: ['Primaria', 'Secundaria', 'Preparatoria', 'Técnico Superior Universitario', 'Ingeniería', 'Posgrado'],
     Most_Used_Platform: ['YouTube', 'Instagram', 'TikTok', 'Facebook', 'Discord', 'WhatsApp', 'Twitter', 'Otra'],
     Relationship_Status: ['Soltero/a', 'En una relación', 'Casado/a', 'Complicado']
@@ -215,7 +215,7 @@ export const FormUser = () => {
                         {/* Campos obligatorios */}
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Edad *</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">¿Qué edad tienes?</label>
                                 <input
                                     type="number"
                                     name="Age"
@@ -230,7 +230,7 @@ export const FormUser = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Horas diarias de uso *</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">¿Cuántas horas usas las redes sociales?</label>
                                 <input
                                     type="number"
                                     name="Avg_Daily_Usage_Hours"
@@ -246,7 +246,7 @@ export const FormUser = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Horas de sueño por noche *</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">¿Cuántas horas duermes por noche?</label>
                                 <input
                                     type="number"
                                     name="Sleep_Hours_Per_Night"
@@ -262,7 +262,7 @@ export const FormUser = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Puntuación de salud mental (0-10) *</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">¿Cómo calificarías tu salud mental del 1 al 10?</label>
                                 <input
                                     type="number"
                                     name="Mental_Health_Score"
@@ -278,7 +278,7 @@ export const FormUser = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Conflictos por redes sociales *</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">¿Cuántos conflictos sueles tener por las redes sociales?</label>
                                 <input
                                     type="number"
                                     name="Conflicts_Over_Social_Media"
@@ -293,7 +293,7 @@ export const FormUser = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Puntuación de adicción (0-10) *</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">¿Cómo calificarías tu adicción a las redes sociales del 1 al 10?</label>
                                 <input
                                     type="number"
                                     name="Addicted_Score"
@@ -309,7 +309,7 @@ export const FormUser = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Afecta el rendimiento académico *</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">¿El uso de las redes sociales afecta tu rendimiento academico?</label>
                                 <select
                                     name="Affects_Academic_Performance"
                                     value={formData.Affects_Academic_Performance}

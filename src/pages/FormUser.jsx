@@ -1,26 +1,97 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
+// Traducciones para los títulos en español
+const predictionTitles = {
+    Addicted_Score_Prediction: "Nivel de adicción",
+    Sleep_Hours_Prediction: "Horas de sueño por noche",
+    Conflicts_Prediction: "Conflictos por redes sociales",
+    Academic_Impact_Prediction: "Impacto en el rendimiento académico",
+    Mental_Health_Risk_Prediction: "Riesgo de salud mental baja",
+    Addiction_Classification: "Clasificación de adicción",
+    Most_Used_Platform: "Plataforma más usada",
+    Relationship_Status: "Estado de relación",
+    Cluster: "Clúster asignado",
+    Addiction_vs_Sleep: "Adicción vs Horas de sueño",
+    Social_Media_Conflicts: "Conflictos en redes sociales",
+    Academic_Performance_Risk: "Riesgo de bajo rendimiento académico",
+    General_Mixed_Model: "Modelo mixto general"
+};
+
+// Valores válidos para campos categóricos (alineados con el backend)
+const validValues = {
+    Gender: ['Hombre', 'Mujer', 'Otro'],
+    Country: ['México', 'Brasil', 'Perú'],
+    Academic_Level: ['Primaria', 'Secundaria', 'Preparatoria', 'Técnico Superior Universitario', 'Ingeniería', 'Posgrado'],
+    Most_Used_Platform: ['YouTube', 'Instagram', 'TikTok', 'Facebook', 'Discord', 'WhatsApp', 'Twitter', 'Otra'],
+    Relationship_Status: ['Soltero/a', 'En una relación', 'Casado/a', 'Complicado']
+};
+
+// Función para formatear el contenido de la predicción
+const formatPredictionContent = (key, prediction) => {
+    if (typeof prediction === 'string') {
+        return { "Valor predicho": prediction };
+    } else if (prediction.value !== undefined) {
+        const content = { "Valor predicho": prediction.value };
+        if (prediction.interpretation) {
+            content["Interpretación"] = prediction.interpretation;
+        }
+        if (prediction.probability) {
+            content["Probabilidad"] = `${(prediction.probability * 100).toFixed(2)}%`;
+        }
+        return content;
+    }
+    return { "Valor predicho": JSON.stringify(prediction) };
+};
+
+// Función para renderizar una tarjeta de predicción
+const renderPredictionCard = (key, prediction) => {
+    let color = 'bg-blue-50';
+    if (key === 'Addicted_Score_Prediction' && prediction.value > 7) color = 'bg-red-50';
+    else if (key === 'Addicted_Score_Prediction' && prediction.value < 4) color = 'bg-green-50';
+    if (key === 'Sleep_Hours_Prediction' && prediction.value < 6) color = 'bg-red-50';
+    else if (key === 'Sleep_Hours_Per_Night' && prediction.value >= 7) color = 'bg-green-50';
+    if (key === 'Conflicts_Prediction' && prediction.value > 2) color = 'bg-red-50';
+    else if (key === 'Conflicts_Prediction' && prediction.value <= 1) color = 'bg-green-50';
+    if (key === 'Academic_Impact_Prediction' && prediction.value === 1) color = 'bg-red-50';
+    else if (key === 'Academic_Impact_Prediction' && prediction.value === 0) color = 'bg-green-50';
+    if (key === 'Mental_Health_Risk_Prediction' && prediction.value === 0) color = 'bg-red-50';
+    else if (key === 'Mental_Health_Risk_Prediction' && prediction.value === 1) color = 'bg-green-50';
+    if (key === 'Addiction_Classification' && prediction.value === 1) color = 'bg-red-50';
+    else if (key === 'Addiction_Classification' && prediction.value === 0) color = 'bg-green-50';
+    if (key === 'Academic_Performance_Risk' && prediction.value === 1) color = 'bg-red-50';
+    else if (key === 'Academic_Performance_Risk' && prediction.value === 0) color = 'bg-green-50';
+
+    return (
+        <div className={`p-4 rounded-lg shadow-sm ${color}`} key={key}>
+            <h3 className="font-semibold text-lg mb-2">{predictionTitles[key] || key}</h3>
+            <div>
+                {Object.entries(formatPredictionContent(key, prediction)).map(([label, value]) => (
+                    <p key={label}><span className="font-medium">{label}:</span> {value}</p>
+                ))}
+            </div>
+        </div>
+    );
+};
+
 export const FormUser = () => {
     const [formData, setFormData] = useState({
         Age: '',
         Avg_Daily_Usage_Hours: '',
         Sleep_Hours_Per_Night: '',
+        Mental_Health_Score: '',
         Conflicts_Over_Social_Media: '',
-        Relationship_Status: 'Single',
-        Country: 'USA',
-        Academic_Level: 'Undergraduate',
-        Most_Used_Platform: 'Instagram',
-        Gender: 'Male'
+        Addicted_Score: '',
+        Affects_Academic_Performance: '0',
+        Relationship_Status: 'Soltero/a',
+        Country: 'México',
+        Academic_Level: 'Técnico Superior Universitario',
+        Most_Used_Platform: 'YouTube',
+        Gender: 'Hombre'
     });
-    
+
     const [predictions, setPredictions] = useState(null);
-    const [plots, setPlots] = useState({
-        scatter: null,
-        histogram: null,
-        tree: null,
-        kmeans: null
-    });
+    const [plots, setPlots] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('predictions');
@@ -31,27 +102,53 @@ export const FormUser = () => {
     };
 
     const validateForm = () => {
-        const { Age, Avg_Daily_Usage_Hours, Sleep_Hours_Per_Night, Conflicts_Over_Social_Media } = formData;
-        
-        if (!Age || !Avg_Daily_Usage_Hours || !Sleep_Hours_Per_Night || !Conflicts_Over_Social_Media) {
+        const {
+            Age, Avg_Daily_Usage_Hours, Sleep_Hours_Per_Night,
+            Mental_Health_Score, Conflicts_Over_Social_Media,
+            Addicted_Score, Affects_Academic_Performance,
+            Gender, Country, Academic_Level, Most_Used_Platform, Relationship_Status
+        } = formData;
+
+        if (!Age || !Avg_Daily_Usage_Hours || !Sleep_Hours_Per_Night ||
+            !Mental_Health_Score || !Conflicts_Over_Social_Media ||
+            !Addicted_Score || !Affects_Academic_Performance) {
             return "Por favor completa todos los campos obligatorios.";
         }
-        
+
+        if (!Academic_Level) {
+            return "El nivel académico es obligatorio.";
+        }
+
         const numAge = parseInt(Age);
         const numUsage = parseFloat(Avg_Daily_Usage_Hours);
         const numSleep = parseFloat(Sleep_Hours_Per_Night);
+        const numMentalHealth = parseFloat(Mental_Health_Score);
         const numConflicts = parseInt(Conflicts_Over_Social_Media);
-        
+        const numAddictedScore = parseFloat(Addicted_Score);
+        const numAffectsAcademic = parseInt(Affects_Academic_Performance);
+
         if (isNaN(numAge)) return "La edad debe ser un número válido.";
         if (isNaN(numUsage)) return "Las horas de uso deben ser un número válido.";
         if (isNaN(numSleep)) return "Las horas de sueño deben ser un número válido.";
+        if (isNaN(numMentalHealth)) return "La puntuación de salud mental debe ser un número válido.";
         if (isNaN(numConflicts)) return "Los conflictos deben ser un número válido.";
-        
-        if (numAge < 12 || numAge > 100) return "La edad debe estar entre 12 y 100 años.";
+        if (isNaN(numAddictedScore)) return "La puntuación de adicción debe ser un número válido.";
+        if (isNaN(numAffectsAcademic)) return "El impacto académico debe ser 0 o 1.";
+
+        if (numAge < 9 || numAge > 100) return "La edad debe estar entre 9 y 100 años.";
         if (numUsage < 0 || numUsage > 24) return "El uso diario debe ser entre 0 y 24 horas.";
         if (numSleep < 0 || numSleep > 16) return "Las horas de sueño deben ser entre 0 y 16.";
+        if (numMentalHealth < 0 || numMentalHealth > 10) return "La puntuación de salud mental debe ser entre 0 y 10.";
         if (numConflicts < 0 || numConflicts > 100) return "Los conflictos deben ser entre 0 y 100.";
-        
+        if (numAddictedScore < 0 || numAddictedScore > 10) return "La puntuación de adicción debe ser entre 0 y 10.";
+        if (numAffectsAcademic !== 0 && numAffectsAcademic !== 1) return "El impacto académico debe ser 0 o 1.";
+
+        if (!validValues.Gender.includes(Gender)) return `Género no válido. Opciones válidas: ${validValues.Gender.join(', ')}.`;
+        if (!validValues.Country.includes(Country)) return `País no válido. Opciones válidas: ${validValues.Country.join(', ')}.`;
+        if (!validValues.Academic_Level.includes(Academic_Level)) return `Nivel académico no válido. Opciones válidas: ${validValues.Academic_Level.join(', ')}.`;
+        if (!validValues.Most_Used_Platform.includes(Most_Used_Platform)) return `Plataforma no válida. Opciones válidas: ${validValues.Most_Used_Platform.join(', ')}.`;
+        if (!validValues.Relationship_Status.includes(Relationship_Status)) return `Estado civil no válido. Opciones válidas: ${validValues.Relationship_Status.join(', ')}.`;
+
         return null;
     };
 
@@ -59,13 +156,10 @@ export const FormUser = () => {
         e.preventDefault();
         setError(null);
         setPredictions(null);
-        setPlots({
-            scatter: null,
-            histogram: null,
-            tree: null,
-            kmeans: null
-        });
+        setPlots(null);
         setLoading(true);
+
+        console.log("Form data being sent:", formData); // Debugging
 
         const validationError = validateForm();
         if (validationError) {
@@ -74,19 +168,26 @@ export const FormUser = () => {
             return;
         }
 
+        // Convertir valores numéricos antes de enviar
+        const payload = {
+            ...formData,
+            Age: parseInt(formData.Age),
+            Avg_Daily_Usage_Hours: parseFloat(formData.Avg_Daily_Usage_Hours),
+            Sleep_Hours_Per_Night: parseFloat(formData.Sleep_Hours_Per_Night),
+            Mental_Health_Score: parseFloat(formData.Mental_Health_Score),
+            Conflicts_Over_Social_Media: parseInt(formData.Conflicts_Over_Social_Media),
+            Addicted_Score: parseFloat(formData.Addicted_Score),
+            Affects_Academic_Performance: parseInt(formData.Affects_Academic_Performance)
+        };
+
         try {
-            const response = await axios.post('http://localhost:8000/predict-user-addiction', formData, {
+            const response = await axios.post('http://localhost:8000/api/predict-all', payload, {
                 headers: { 'Content-Type': 'application/json' }
             });
-            
+
             if (response.data.status === 'success') {
                 setPredictions(response.data.predictions);
-                setPlots({
-                    scatter: response.data.plots.scatter_plot,
-                    histogram: response.data.plots.histogram_plot,
-                    tree: response.data.plots.tree_plot,
-                    kmeans: response.data.plots.kmeans_3d_plot
-                });
+                setPlots(response.data.plots);
                 setActiveTab('predictions');
             } else {
                 setError(response.data.error || 'Error en el servidor. Por favor intenta más tarde.');
@@ -98,181 +199,206 @@ export const FormUser = () => {
         }
     };
 
-    const renderPredictionCard = (title, content, color = 'bg-blue-50') => {
-        return (
-            <div className={`p-4 rounded-lg shadow-sm ${color}`}>
-                <h3 className="font-semibold text-lg mb-2">{title}</h3>
-                {typeof content === 'string' ? (
-                    <p>{content}</p>
-                ) : (
-                    <div>
-                        {Object.entries(content).map(([key, value]) => (
-                            <p key={key}><span className="font-medium">{key}:</span> {value}</p>
-                        ))}
-                    </div>
-                )}
-            </div>
-        );
-    };
-
     return (
-        <div className="container mx-auto p-4 max-w-6xl bg-blue">
+        <div className="container mx-auto p-4 max-w-6xl bg-blue-100">
             <div className="text-center mb-8">
-                <h1 className="text-4xl font-bold text-blue-600 mb-2">Predicción de Adicción a Redes Sociales</h1>
+                <h1 className="text-4xl font-bold text-blue-600 mb-2">Predicción de Comportamiento en Redes Sociales</h1>
                 <p className="text-gray-600">Completa el formulario para obtener un análisis personalizado</p>
             </div>
 
-            {/* Form Section */}
+            {/* Sección del formulario */}
             <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
                 <form onSubmit={handleSubmit}>
                     <h2 className="text-2xl font-semibold mb-6 text-gray-800 border-b pb-2">Información Personal</h2>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Required Fields */}
+                        {/* Campos obligatorios */}
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Edad *</label>
-                                <input 
-                                    type="number" 
-                                    name="Age" 
-                                    value={formData.Age} 
-                                    onChange={handleInputChange} 
+                                <input
+                                    type="number"
+                                    name="Age"
+                                    value={formData.Age}
+                                    onChange={handleInputChange}
                                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    placeholder="Ej. 25" 
-                                    min="12"
+                                    placeholder="Ej. 25"
+                                    min="9"
                                     max="100"
                                     required
                                 />
                             </div>
-                            
+
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Horas diarias de uso *</label>
-                                <input 
-                                    type="number" 
-                                    name="Avg_Daily_Usage_Hours" 
-                                    value={formData.Avg_Daily_Usage_Hours} 
-                                    onChange={handleInputChange} 
+                                <input
+                                    type="number"
+                                    name="Avg_Daily_Usage_Hours"
+                                    value={formData.Avg_Daily_Usage_Hours}
+                                    onChange={handleInputChange}
                                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    placeholder="Ej. 3.5" 
+                                    placeholder="Ej. 3.5"
                                     step="0.1"
                                     min="0"
                                     max="24"
                                     required
                                 />
                             </div>
-                            
+
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Horas de sueño por noche *</label>
-                                <input 
-                                    type="number" 
-                                    name="Sleep_Hours_Per_Night" 
-                                    value={formData.Sleep_Hours_Per_Night} 
-                                    onChange={handleInputChange} 
+                                <input
+                                    type="number"
+                                    name="Sleep_Hours_Per_Night"
+                                    value={formData.Sleep_Hours_Per_Night}
+                                    onChange={handleInputChange}
                                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    placeholder="Ej. 7.5" 
+                                    placeholder="Ej. 7.5"
                                     step="0.1"
                                     min="0"
                                     max="16"
                                     required
                                 />
                             </div>
-                            
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Puntuación de salud mental (0-10) *</label>
+                                <input
+                                    type="number"
+                                    name="Mental_Health_Score"
+                                    value={formData.Mental_Health_Score}
+                                    onChange={handleInputChange}
+                                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    placeholder="Ej. 8"
+                                    step="0.1"
+                                    min="0"
+                                    max="10"
+                                    required
+                                />
+                            </div>
+
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Conflictos por redes sociales *</label>
-                                <input 
-                                    type="number" 
-                                    name="Conflicts_Over_Social_Media" 
-                                    value={formData.Conflicts_Over_Social_Media} 
-                                    onChange={handleInputChange} 
+                                <input
+                                    type="number"
+                                    name="Conflicts_Over_Social_Media"
+                                    value={formData.Conflicts_Over_Social_Media}
+                                    onChange={handleInputChange}
                                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    placeholder="Ej. 2" 
+                                    placeholder="Ej. 2"
                                     min="0"
                                     max="100"
                                     required
                                 />
                             </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Puntuación de adicción (0-10) *</label>
+                                <input
+                                    type="number"
+                                    name="Addicted_Score"
+                                    value={formData.Addicted_Score}
+                                    onChange={handleInputChange}
+                                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    placeholder="Ej. 5"
+                                    step="0.1"
+                                    min="0"
+                                    max="10"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Afecta el rendimiento académico *</label>
+                                <select
+                                    name="Affects_Academic_Performance"
+                                    value={formData.Affects_Academic_Performance}
+                                    onChange={handleInputChange}
+                                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    required
+                                >
+                                    <option value="0">No</option>
+                                    <option value="1">Sí</option>
+                                </select>
+                            </div>
                         </div>
-                        
-                        {/* Optional Fields */}
+
+                        {/* Campos opcionales */}
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Género</label>
-                                <select 
-                                    name="Gender" 
-                                    value={formData.Gender} 
-                                    onChange={handleInputChange} 
+                                <select
+                                    name="Gender"
+                                    value={formData.Gender}
+                                    onChange={handleInputChange}
                                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 >
-                                    <option value="Male">Masculino</option>
-                                    <option value="Female">Femenino</option>
-                                    <option value="Other">Otro/Prefiero no decir</option>
+                                    {validValues.Gender.map(gender => (
+                                        <option key={gender} value={gender}>{gender}</option>
+                                    ))}
                                 </select>
                             </div>
-                            
+
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Estado civil</label>
-                                <select 
-                                    name="Relationship_Status" 
-                                    value={formData.Relationship_Status} 
-                                    onChange={handleInputChange} 
+                                <select
+                                    name="Relationship_Status"
+                                    value={formData.Relationship_Status}
+                                    onChange={handleInputChange}
                                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 >
-                                    <option value="Single">Soltero/a</option>
-                                    <option value="In Relationship">En una relación</option>
-                                    <option value="Married">Casado/a</option>
-                                    <option value="Complicated">Es complicado</option>
+                                    {validValues.Relationship_Status.map(status => (
+                                        <option key={status} value={status}>{status}</option>
+                                    ))}
                                 </select>
                             </div>
-                            
+
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">País</label>
-                                <input 
-                                    type="text" 
-                                    name="Country" 
-                                    value={formData.Country} 
-                                    onChange={handleInputChange} 
-                                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    placeholder="Ej. México" 
-                                />
-                            </div>
-                            
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Nivel académico</label>
-                                <select 
-                                    name="Academic_Level" 
-                                    value={formData.Academic_Level} 
-                                    onChange={handleInputChange} 
+                                <select
+                                    name="Country"
+                                    value={formData.Country}
+                                    onChange={handleInputChange}
                                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 >
-                                    <option value="High School">Preparatoria</option>
-                                    <option value="Undergraduate">Licenciatura</option>
-                                    <option value="Graduate">Posgrado</option>
-                                    <option value="Doctorate">Doctorado</option>
-                                    <option value="Other">Otro</option>
+                                    {validValues.Country.map(country => (
+                                        <option key={country} value={country}>{country}</option>
+                                    ))}
                                 </select>
                             </div>
-                            
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Nivel académico</label>
+                                <select
+                                    name="Academic_Level"
+                                    value={formData.Academic_Level}
+                                    onChange={handleInputChange}
+                                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    required
+                                >
+                                    <option value="" disabled>Selecciona un nivel académico</option>
+                                    {validValues.Academic_Level.map(level => (
+                                        <option key={level} value={level}>{level}</option>
+                                    ))}
+                                </select>
+                            </div>
+
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Plataforma más usada</label>
-                                <select 
-                                    name="Most_Used_Platform" 
-                                    value={formData.Most_Used_Platform} 
-                                    onChange={handleInputChange} 
+                                <select
+                                    name="Most_Used_Platform"
+                                    value={formData.Most_Used_Platform}
+                                    onChange={handleInputChange}
                                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 >
-                                    <option value="Instagram">Instagram</option>
-                                    <option value="Twitter">Twitter</option>
-                                    <option value="TikTok">TikTok</option>
-                                    <option value="YouTube">YouTube</option>
-                                    <option value="Facebook">Facebook</option>
-                                    <option value="WhatsApp">WhatsApp</option>
-                                    <option value="WeChat">WeChat</option>
-                                    <option value="Other">Otra</option>
+                                    {validValues.Most_Used_Platform.map(platform => (
+                                        <option key={platform} value={platform}>{platform}</option>
+                                    ))}
                                 </select>
                             </div>
                         </div>
                     </div>
-                    
+
                     <div className="mt-8 flex justify-center">
                         <button
                             type="submit"
@@ -288,16 +414,16 @@ export const FormUser = () => {
                                     Analizando...
                                 </span>
                             ) : (
-                                'Analizar mi uso de redes sociales'
+                                'Analizar mi comportamiento en redes sociales'
                             )}
                         </button>
                     </div>
-                    
+
                     {error && (
                         <div className="mt-6 p-4 bg-red-50 border-l-4 border-red-500 rounded">
                             <div className="flex items-center text-red-700">
                                 <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                                 </svg>
                                 <p>{error}</p>
                             </div>
@@ -306,7 +432,7 @@ export const FormUser = () => {
                 </form>
             </div>
 
-            {/* Results Section */}
+            {/* Sección de resultados */}
             {predictions && (
                 <div className="bg-white rounded-xl shadow-lg overflow-hidden">
                     <div className="border-b border-gray-200">
@@ -315,7 +441,7 @@ export const FormUser = () => {
                                 onClick={() => setActiveTab('predictions')}
                                 className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${activeTab === 'predictions' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
                             >
-                                Resultados
+                                Predicciones
                             </button>
                             <button
                                 onClick={() => setActiveTab('visualizations')}
@@ -325,7 +451,7 @@ export const FormUser = () => {
                             </button>
                         </nav>
                     </div>
-                    
+
                     <div className="p-6">
                         {activeTab === 'predictions' ? (
                             <div className="space-y-6">
@@ -336,95 +462,25 @@ export const FormUser = () => {
                                         </svg>
                                         <h2 className="text-xl font-semibold text-gray-800">Resumen de tu análisis</h2>
                                     </div>
-                                    <p className="mt-2 text-gray-600">Basado en los datos proporcionados, aquí están los resultados de los diferentes modelos de análisis.</p>
+                                    <p className="mt-2 text-gray-600">Basado en los datos proporcionados, aquí están las predicciones para tu comportamiento en redes sociales.</p>
                                 </div>
-                                
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {renderPredictionCard(
-                                        "Clasificación Binaria", 
-                                        {
-                                            "Predicción": predictions.logistic_binary.prediction === 1 ? '🔴 Riesgo Alto' : '🟢 Riesgo Bajo',
-                                            "Probabilidad alta": `${(predictions.logistic_binary.probability_high * 100).toFixed(1)}%`,
-                                            "Interpretación": predictions.logistic_binary.interpretation
-                                        },
-                                        predictions.logistic_binary.prediction === 1 ? 'bg-red-50' : 'bg-green-50'
-                                    )}
-                                    
-                                    {renderPredictionCard(
-                                        "Clasificación Multiclase", 
-                                        {
-                                            "Nivel": predictions.logistic_multiclass.prediction,
-                                            "Probabilidades": `Bajo: ${(predictions.logistic_multiclass.probabilities.Bajo * 100).toFixed(1)}%, Medio: ${(predictions.logistic_multiclass.probabilities.Medio * 100).toFixed(1)}%, Alto: ${(predictions.logistic_multiclass.probabilities.Alto * 100).toFixed(1)}%`,
-                                            "Interpretación": predictions.logistic_multiclass.interpretation
-                                        }
-                                    )}
-                                </div>
-                                
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {renderPredictionCard(
-                                        "Árbol de Decisión", 
-                                        {
-                                            "Predicción": predictions.decision_tree_binary.prediction === 1 ? '🔴 Riesgo Alto' : '🟢 Riesgo Bajo',
-                                            "Interpretación": predictions.decision_tree_binary.interpretation
-                                        }
-                                    )}
-                                    
-                                    {renderPredictionCard(
-                                        "Agrupamiento (KMeans)", 
-                                        {
-                                            "Grupo": predictions.kmeans_clustering.cluster,
-                                            "Interpretación": predictions.kmeans_clustering.interpretation
-                                        }
-                                    )}
-                                </div>
-                                
-                                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                                    <h3 className="font-semibold text-lg mb-2">Modelos de Regresión Lineal</h3>
-                                    <div className="space-y-2">
-                                        <p><span className="font-medium">Uso y sueño:</span> {predictions.linear_regression.model_1_usage_sleep}</p>
-                                        <p><span className="font-medium">Edad y salud mental:</span> {predictions.linear_regression.model_2_age_mental}</p>
-                                        <p><span className="font-medium">Conflictos y salud mental:</span> {predictions.linear_regression.model_3_conflicts_mental}</p>
-                                        <p className="text-sm text-gray-500 mt-2">{predictions.linear_regression.note}</p>
-                                    </div>
-                                </div>
-                                
-                                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
-                                    <div className="flex">
-                                        <svg className="w-5 h-5 text-yellow-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                        </svg>
-                                        <div>
-                                            <h4 className="font-medium text-yellow-800">Recomendaciones</h4>
-                                            <p className="text-yellow-700 mt-1">Considera reducir tu tiempo en redes sociales si los resultados indican un riesgo alto. Busca actividades alternativas y establece horarios de uso.</p>
-                                        </div>
-                                    </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {Object.entries(predictions).map(([key, prediction]) => (
+                                        renderPredictionCard(key, prediction)
+                                    ))}
                                 </div>
                             </div>
                         ) : (
                             <div className="space-y-8">
-                                <div>
-                                    <h3 className="text-xl font-semibold mb-4 text-gray-800">Uso diario vs. Nivel de adicción</h3>
-                                    {plots.scatter ? (
-                                        <img 
-                                            src={`data:image/png;base64,${plots.scatter}`} 
-                                            alt="Gráfico de dispersión" 
-                                            className="w-full rounded-lg border border-gray-200" 
-                                        />
-                                    ) : (
-                                        <div className="bg-gray-100 p-8 text-center rounded-lg">
-                                            <p className="text-gray-500">No hay datos disponibles para este gráfico</p>
-                                        </div>
-                                    )}
-                                </div>
-                                
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    <div>
-                                        <h3 className="text-xl font-semibold mb-4 text-gray-800">Distribución de adicción</h3>
-                                        {plots.histogram ? (
-                                            <img 
-                                                src={`data:image/png;base64,${plots.histogram}`} 
-                                                alt="Histograma" 
-                                                className="w-full rounded-lg border border-gray-200" 
+                                {Object.entries(plots).map(([key, plot]) => (
+                                    <div key={key}>
+                                        <h3 className="text-xl font-semibold mb-4 text-gray-800">{predictionTitles[key.replace('_plot', '')] || key.replace('_plot', '')}</h3>
+                                        {plot ? (
+                                            <img
+                                                src={`data:image/png;base64,${plot}`}
+                                                alt={`Gráfico de ${predictionTitles[key.replace('_plot', '')] || key.replace('_plot', '')}`}
+                                                className="w-full rounded-lg border border-gray-200"
                                             />
                                         ) : (
                                             <div className="bg-gray-100 p-8 text-center rounded-lg">
@@ -432,37 +488,7 @@ export const FormUser = () => {
                                             </div>
                                         )}
                                     </div>
-                                    
-                                    <div>
-                                        <h3 className="text-xl font-semibold mb-4 text-gray-800">Árbol de decisión</h3>
-                                        {plots.tree ? (
-                                            <img 
-                                                src={`data:image/png;base64,${plots.tree}`} 
-                                                alt="Árbol de decisión" 
-                                                className="w-full rounded-lg border border-gray-200" 
-                                            />
-                                        ) : (
-                                            <div className="bg-gray-100 p-8 text-center rounded-lg">
-                                                <p className="text-gray-500">No hay datos disponibles para este gráfico</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                                
-                                <div>
-                                    <h3 className="text-xl font-semibold mb-4 text-gray-800">Agrupamiento KMeans (3D)</h3>
-                                    {plots.kmeans ? (
-                                        <img 
-                                            src={`data:image/png;base64,${plots.kmeans}`} 
-                                            alt="Gráfico 3D KMeans" 
-                                            className="w-full rounded-lg border border-gray-200" 
-                                        />
-                                    ) : (
-                                        <div className="bg-gray-100 p-8 text-center rounded-lg">
-                                            <p className="text-gray-500">No hay datos disponibles para este gráfico</p>
-                                        </div>
-                                    )}
-                                </div>
+                                ))}
                             </div>
                         )}
                     </div>
